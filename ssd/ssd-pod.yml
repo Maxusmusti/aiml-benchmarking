@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: benchmarking-mlperf-ssd
+spec:
+  restartPolicy: Never
+  # Force the Pod to run on the same Node where the PVC was bound
+  nodeSelector:
+    kubernetes.io/hostname: sno
+  containers:
+  - name: mlperf
+    image: quay.io/openshift-psap/ci-artifacts:mlperf-ssd-training-benchmark
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+    volumeMounts:
+    - name: entrypoint-volume
+      mountPath: /mnt/entrypoint/entrypoint.sh
+      readOnly: false
+      subPath: entrypoint.sh
+    - mountPath: /storage/
+      name: storage-volume
+    - mountPath: /dev/shm
+      name: dshm
+    command:
+    - bash
+    - -c
+    - "/mnt/entrypoint/entrypoint.sh"
+    env:
+    - name: BENCHMARKING_EPOCHS
+      value: "3"
+    - name: BENCHMARKING_THRESHOLD
+      value: "0.05"
+  volumes:
+  - name: entrypoint-volume
+    configMap:
+      defaultMode: 0777
+      name: benchmarking-mlperf-ssd-entrypoint
+  - name: storage-volume
+    persistentVolumeClaim:
+      claimName: benchmarking-coco-dataset
+  - name: dshm
+    emptyDir:
+      medium: Memory

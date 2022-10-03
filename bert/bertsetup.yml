@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bert-volume-setup-1
+spec:
+  restartPolicy: Never
+  # Force the Pod to run on the same Node where the PVC was bound
+  containers:
+  - name: fedora
+    image: quay.io/fedora/fedora:latest
+    volumeMounts:
+    - name: entrypoint-volume
+      mountPath: /mnt/entrypoint/bertentry.sh
+      readOnly: false
+      subPath: bertentry.sh
+    - mountPath: /bert_tf2/
+      name: storage-volume
+    command:
+    - bash
+    - -c
+    - "/mnt/entrypoint/bertentry.sh"
+  volumes:
+  - name: entrypoint-volume
+    configMap:
+      defaultMode: 0777
+      name: bert-setup-entrypoint
+  - name: storage-volume
+    persistentVolumeClaim:
+      claimName: benchmarking-bert-dataset

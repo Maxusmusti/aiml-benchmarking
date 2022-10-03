@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  entrypoint.sh: "#! /bin/bash\n\nset -o pipefail\nset -o errexit\nset -o nounset\nset
+    -x\n\n# Chosen as it's tested to terminate within the alloted time\nSEED=5652442\n\nEPOCHS=${BENCHMARKING_EPOCHS:-80}\necho
+    \"Using epochs=$EPOCHS\"\nTHRESHOLD=${BENCHMARKING_THRESHOLD:-0.23}\necho \"Using
+    threshold=$THRESHOLD\"\n\nDATASET_DIR=/storage\n\nls /storage\nls -alF /storage/annotations\nunset
+    CUDA_VISIBLE_DEVICES\n\nPYCMD=$(cat <<EOF\nimport pycuda\nfrom pycuda import compiler\nimport
+    pycuda.driver as drv\n\ndrv.init()\nprint(\"%d device(s) found.\" % drv.Device.count())\n
+    \          \nfor ordinal in range(drv.Device.count()):\n    dev = drv.Device(ordinal)\n
+    \   print (ordinal, dev.name())\nEOF\n)\n\npython -c \"$PYCMD\"\n\nexport NCCL_DEBUG=INFO\nexport
+    CUDA_VISIBLE_DEVICES=0\ntime python -u -m bind_launch --nsockets_per_node=1 --ncores_per_socket=1
+    --nproc_per_node=1 \\\n     train.py --epochs ${EPOCHS} \\\n              --threshold=${THRESHOLD}
+    \\\n              --data ${DATASET_DIR} \\\n              --no-save \\\n              --use-fp16
+    --nhwc \\\n              --evaluation 1 2 3 6 12 40 70 \\\n              --num-workers=1
+    \\\n              --batch-size=16 \\\n              --local_rank=0 \\\n              --warmup=1
+    \\\n              --warmup-factor 1 \\\n              --seed $SEED\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: benchmarking-mlperf-ssd-entrypoint

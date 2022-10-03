@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  bertentry.sh: |
+    yum install -y git
+    git clone https://github.com/maxusmusti/DeepLearningExamples.git
+    cd DeepLearningExamples
+    git checkout -b vgpu origin/vgpu
+    rm -rf /bert_tf2/*
+    mv -v TensorFlow2/LanguageModeling/BERT/* /bert_tf2/
+    ls -alF /bert_tf2
+    #git pull
+    #rm -f /bert_tf2/run_squad.py
+    #mv TensorFlow2/LanguageModeling/BERT/run_squad.py /bert_tf2/run_squad.py
+    #cat /bert_tf2/run_squad.py
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: bert-setup-entrypoint

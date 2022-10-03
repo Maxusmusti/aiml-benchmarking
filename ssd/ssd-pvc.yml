@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: benchmarking-coco-dataset
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: localblockcoco
+  resources:
+    requests:
+      storage: 50Gi

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: squad-download
+spec:
+  restartPolicy: Never
+  # Force the Pod to run on the same Node where the PVC was bound
+  nodeSelector:
+    kubernetes.io/hostname: sno
+  containers:
+  - name: bert
+    image: quay.io/meyceoz/bert_tf2
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+    volumeMounts:
+    - mountPath: /workspace/bert_tf2/
+      name: storage-volume
+    - mountPath: /dev/shm
+      name: dshm
+    command:
+    - bash
+    - -c
+    - "bash data/create_datasets_from_start.sh squad wiki_only"
+  volumes:
+  - name: storage-volume
+    persistentVolumeClaim:
+      claimName: benchmarking-bert-dataset
+  - name: dshm
+    emptyDir:
+      medium: Memory
