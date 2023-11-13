@@ -6,7 +6,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: pycuda-test
-    image: quay.io/meyceoz/pycuda:lora-8bit
+    image: quay.io/meyceoz/pycuda:lora-8bit-train
     resources:
       limits:
         nvidia.com/gpu: 1
