@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: memory-test
+spec:
+  restartPolicy: Never
+  containers:
+  - name: pycuda-test
+    image: quay.io/meyceoz/pycuda:lora-8bit
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+      requests:
+        nvidia.com/gpu: 1
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: dshm
+    command: [ "/bin/sh", "-c" ]
+    args: [ "accelerate launch run_peft.py" ]
+  volumes:
+  - name: dshm
+    emptyDir:
+      medium: Memory
